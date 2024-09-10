@@ -364,3 +364,10 @@ aus_production |>
   gg_season(Beer)
 ```
 
+```{r}
+desempleo_tsbl |> 
+  gg_subseries(price)
+```
+
+# Descomposición de series de tiempo
+
