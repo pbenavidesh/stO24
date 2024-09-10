@@ -1,0 +1,366 @@
+---
+title: "Gráficas con ggplot2"
+author: "PBH"
+format: 
+  html:
+    embed-resources: true
+    toc: true
+---
+
+
+## pkgs
+
+
+```{r}
+library(tidyverse)
+library(fpp3)
+library(tidyquant)
+library(plotly)
+# magrittr
+```
+
+## Uso del pipe |> 
+
+```{r}
+mpg |> 
+  mutate(
+    km_l_cty = cty * 1.609 / 3.785,
+    km_l_hwy = hwy * 1.609 / 3.785
+  ) |> 
+  group_by(cyl, drv) |> 
+  summarise(
+    cty = mean(km_l_cty),
+    .groups = "drop"
+  )
+
+mpg %>% 
+  mutate(
+    km_l_cty = cty * 1.609 / 3.785,
+    km_l_hwy = hwy * 1.609 / 3.785
+  ) %>% 
+  group_by(cyl, drv) %>%
+  summarise(
+    cty = mean(km_l_cty),
+    .groups = "drop"
+  )
+# no recomendado
+
+summarise(group_by(mutate(mpg, km_l_cty = cty * 1.609 / 3.785, km_l_hwy = hwy * 1.609 / 3.785), cyl, drv), cty = mean(km_l_cty), .groups = "drop")
+
+# 2a opcion no recomendada
+
+nva_tabla <- mutate(mpg, km_l_cty = cty * 1.609 / 3.785, km_l_hwy = hwy * 1.609 / 3.785)
+
+agrupada <- group_by(nva_tabla, cyl, drv)
+
+summarise(agrupada, cty = mean(km_l_cty), .groups = "drop")
+```
+
+
+# Gráficas con `ggplot2`
+
+```{r}
+plot(cars)
+```
+
+CTRL + SHIFT + ENTER corre todo el chunk
+
+CTRL + ENTER corre la(s) línea(s) seleccionada(S)
+
+```{r}
+mpg |> 
+  ggplot(aes(x = cyl, y = cty, group = cyl)) +
+  geom_boxplot() +
+  labs(
+    title = "Boxplot del consumo en ciudad vs. la cantidad de cilindros",
+    x = "Cilindros",
+    y = "Millas por galón en ciudad"
+  ) +
+  theme_minimal()
+```
+
+CTRL + ALT + I
+
+
+```{r}
+mpg |> 
+  ggplot(aes(x = displ, y = cty, color = class)) +
+  geom_point() +
+  labs(
+    title = "Boxplot del consumo en ciudad vs. la cantidad de cilindros",
+    x = "Tamaño del motor en litros",
+    y = "Millas por galón en ciudad"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+mpg |> 
+  ggplot() +
+  geom_point(aes(x = displ, y = cty, color = class)) +
+  labs(
+    title = "Boxplot del consumo en ciudad vs. la cantidad de cilindros",
+    x = "Tamaño del motor en litros",
+    y = "Millas por galón en ciudad"
+  ) +
+  theme_minimal()
+
+mpg |> 
+  ggplot(aes(x = displ, y = cty)) +
+  geom_point(aes(color = class)) +
+  geom_smooth() +
+  labs(
+    title = "Boxplot del consumo en ciudad vs. la cantidad de cilindros",
+    x = "Tamaño del motor en litros",
+    y = "Millas por galón en ciudad"
+  ) +
+  theme_minimal()
+
+
+```
+
+
+
+```{r}
+mpg |> 
+  ggplot(aes(x = displ, y = cty)) +
+  geom_point(color = "dodgerblue2") +
+  geom_smooth(method = "loess") +
+  labs(
+    title = "Boxplot del consumo en ciudad vs. la cantidad de cilindros",
+    x = "Tamaño del motor en litros",
+    y = "Millas por galón en ciudad"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+mpg |> 
+  ggplot(aes(x = displ, y = cty, color = class)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  labs(
+    title = "Boxplot del consumo en ciudad vs. la cantidad de cilindros",
+    x = "Tamaño del motor en litros",
+    y = "Millas por galón en ciudad"
+  ) +
+  theme_minimal()
+```
+* color
+* forma
+
+```{r}
+graf_dispersion <- mpg |> 
+  ggplot(aes(x = displ, y = cty)) +
+  geom_point() +
+  labs(
+    title = "Boxplot del consumo en ciudad vs. la cantidad de cilindros",
+    x = "Tamaño del motor en litros",
+    y = "Millas por galón en ciudad"
+  ) +
+  theme_minimal()
+
+graf_dispersion + 
+  aes(shape = class)
+```
+
+* transparencia
+
+```{r}
+graf_dispersion +
+  aes(alpha = class)
+```
+
+* tamaño
+
+```{r}
+graf_dispersion +
+  aes(size = class)
+```
+
+```{r}
+mpg
+
+graf_dispersion +
+  aes(color = class, shape = drv, size = cyl)
+```
+
+
+```{r}
+mpg |> 
+  ggplot(aes(x = displ, y = cty)) +
+  geom_point(color = "dodgerblue", size = 3, shape = 22, fill = "green")
+```
+
+```{r}
+graf_dispersion +
+  facet_wrap(~ class, scales = "free", ncol = 4)
+```
+
+$$
+y = mx + b 
+$$
+
+```{r}
+graf_dispersion +
+  facet_grid(drv ~ class)
+```
+
+## Gráficas de series de tiempo
+
+```{r}
+data("economics")
+economics
+```
+```{r}
+economics |> 
+  ggplot(aes(x = date, y = unemploy)) +
+  geom_line()
+```
+
+```{r}
+aus_production |> 
+  ggplot(aes(x = Quarter, y = Beer)) +
+  geom_line() +
+  geom_point()
+```
+
+## Descarga de datos con `tidyquant`
+
+```{r}
+desempleo <- tq_get(
+  x    = "LFHU24TTMXM647N", 
+  get  = "economic.data",
+  from = "2005-01-01",
+  to   = "2024-06-01"
+)
+desempleo
+```
+
+```{r}
+p1 <- desempleo |> 
+  ggplot(aes(x = date, y = price)) +
+  geom_line() +
+  geom_point(size = 0.8, color = "firebrick")
+
+ggplotly(p1, dynamicTicks = TRUE) |> 
+  rangeslider()
+```
+
+```{r}
+divisas <- c("MXN=X", "DX-Y.NYB")
+
+datos <- tq_get(
+  x = divisas,
+  get = "stock.prices",
+  from = "2018-01-01",
+  to = today() - 1
+)
+
+datos
+```
+
+```{r}
+datos |> 
+  ggplot(aes(x = date, y = close, color = symbol)) +
+  geom_line() +
+  facet_wrap(~ symbol, scales = "free_y") +
+  theme(legend.position = "none")
+
+datos |> 
+  ggplot(aes(x = date, y = close, color = symbol)) +
+  geom_line() +
+  theme(legend.position = "none")
+
+datos |> 
+  ggplot(aes(x = date, y = close, color = symbol)) +
+  geom_line() +
+  scale_y_log10() +
+  theme(legend.position = "none")
+
+p2 <- datos |> 
+  ggplot(aes(x = date, y = log(close), color = symbol)) +
+  geom_line() +
+  theme(legend.position = "none")
+
+ggplotly(p2, dynamicTicks = TRUE) |> 
+  rangeslider()
+```
+
+```{r}
+economics |> 
+  pivot_longer(cols = - date, names_to = "variable", values_to = "valor") |> 
+  ggplot(aes(x = date, y = valor, color = variable)) +
+  geom_line() +
+  facet_wrap(~ variable, scales = "free_y") +
+  theme(legend.position = "none")
+```
+
+# tidyverts
+
+El ecosistema del `tidyverts` está compuesto por:
+
+* tsibble
+* feasts
+* fable
+
+
+```{r}
+economics
+aus_production
+```
+
+Necesitamos convertir la tabla economics a una tsibble:
+
+```{r}
+econ_tsbl <- economics |> 
+  mutate(date = yearmonth(date)) |> 
+  as_tsibble(key = NULL, 
+             index = date)
+econ_tsbl
+
+econ_tsbl_long <- econ_tsbl |> 
+  pivot_longer(cols = - date, names_to = "variable", values_to = "valor")
+
+econ_tsbl_long
+
+aus_livestock |> 
+  as_tibble() |> 
+  as_tsibble(
+    key = c(Animal, State),
+    index = Month
+  )
+```
+
+```{r}
+econ_tsbl_long |> 
+  autoplot(valor) +
+  facet_wrap(~ variable, scales = "free_y") +
+  theme(legend.position = "none")
+```
+
+
+```{r}
+desempleo_tsbl <- desempleo |>
+  mutate(date = yearmonth(date)) |> 
+  as_tsibble(
+    key = c(symbol),
+    index = date
+  )
+    
+desempleo_tsbl
+
+desempleo_tsbl |> 
+  autoplot(price)
+```
+
+## gráfica estacional
+
+```{r}
+desempleo_tsbl |> 
+  gg_season(price)
+
+aus_production |> 
+  gg_season(Beer)
+```
+
