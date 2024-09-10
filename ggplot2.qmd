@@ -371,3 +371,63 @@ desempleo_tsbl |>
 
 # Descomposición de series de tiempo
 
+```{r}
+desempleo_tsbl <- desempleo_tsbl |> 
+  mutate(tendencia = slider::slide_dbl(price, 
+                                     mean,
+                                     .before = 12,
+                                     .after = 12,
+                                     .complete = TRUE)) 
+
+desempleo_tsbl |> 
+  autoplot(price, color = "darkgrey") +
+  geom_line(aes(y = tendencia), color = "firebrick")
+```
+
+```{r}
+desempleo_tsbl <- desempleo_tsbl |> 
+  mutate(
+    desempleo_menos_media = price - tendencia
+  ) 
+desempleo_tsbl |> 
+  autoplot(desempleo_menos_media)
+
+estacionalidad <- desempleo_tsbl |> 
+  as_tibble() |>
+  mutate(mes = month(date)) |> 
+  group_by(mes) |> 
+  summarise(estacionalidad = mean(desempleo_menos_media, na.rm = TRUE)) 
+
+estacionalidad |> 
+  ggplot(aes(x = mes, y = estacionalidad)) +
+  geom_line()
+
+estacionalidad_vec <- rep(pull(estacionalidad, estacionalidad),20)[1:234]
+
+desempleo_tsbl <- desempleo_tsbl |> 
+  mutate(estacionalidad = estacionalidad_vec)
+
+desempleo_tsbl |> 
+  ggplot(aes(x = date, y = estacionalidad)) +
+  geom_line()
+```
+
+
+```{r}
+desempleo_tsbl |> 
+  mutate(
+    residual = price - tendencia - estacionalidad
+  ) |> 
+  autoplot(residual)
+```
+
+```{r}
+desempleo_tsbl |> 
+  model(
+    dcmp_clasica = classical_decomposition(price)
+  ) |> 
+  components() |> 
+  autoplot()
+```
+
+
