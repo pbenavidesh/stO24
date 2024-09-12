@@ -227,6 +227,8 @@ aus_production |>
 
 ## Descarga de datos con `tidyquant`
 
+Descarga de datos del FRED:
+
 ```{r}
 desempleo <- tq_get(
   x    = "LFHU24TTMXM647N", 
@@ -234,6 +236,7 @@ desempleo <- tq_get(
   from = "2005-01-01",
   to   = "2024-06-01"
 )
+
 desempleo
 ```
 
@@ -420,6 +423,7 @@ desempleo_tsbl |>
   ) |> 
   autoplot(residual)
 ```
+## Descomposición clásica
 
 ```{r}
 desempleo_tsbl |> 
@@ -430,4 +434,31 @@ desempleo_tsbl |>
   autoplot()
 ```
 
+## Descomposiciones 
+
+EEUU y luego Canadá
+
+```{r}
+desempleo_tsbl |> 
+  model(
+    x_11 = X_13ARIMA_SEATS(price ~ x11())
+  ) |> 
+  components() |> 
+  autoplot()
+```
+
+## SEATS
+
+Banco de España
+
+```{r}
+desempleo_tsbl |> 
+  model(
+    x_11 = X_13ARIMA_SEATS(box_cox(price, lambda = 0) ~ seats())
+  ) |> 
+  components() |> 
+  autoplot()
+```
+
+## STL
 
