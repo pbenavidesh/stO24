@@ -462,3 +462,76 @@ desempleo_tsbl |>
 
 ## STL
 
+
+
+```{r}
+# sin control por outliers
+desempleo_tsbl |> 
+  model(
+    stl = STL(price)
+  ) |> 
+  components() |> 
+  autoplot()
+
+# robusta ante outliers
+desempleo_tsbl |> 
+  model(
+    stl = STL(price, robust = TRUE)
+  ) |> 
+  components() |> 
+  autoplot()
+```
+
+```{r}
+# sin control por outliers
+desempleo_tsbl |> 
+  model(
+    stl = STL(price ~ season(window = "periodic"))
+  ) |> 
+  components() |> 
+  autoplot()
+
+# robusta ante outliers
+desempleo_tsbl |> 
+  model(
+    stl = STL(price ~ season(window = "periodic"), robust = TRUE)
+  ) |> 
+  components() |> 
+  autoplot()
+```
+
+```{r}
+desempleo_tsbl |> 
+  model(
+    stl = STL(price ~ trend(window = 5) + season(window = 7), robust = TRUE)
+  ) |> 
+  components() |> 
+  autoplot()
+
+desempleo_tsbl |> 
+  model(
+    stl = STL(price ~ trend(window = 13) + season(window = 27), robust = TRUE)
+  ) |> 
+  components() |> 
+  autoplot()
+
+desempleo_tsbl |> 
+  model(
+    stl = STL(price ~ trend(window = 135) + season(window = 27), robust = TRUE)
+  ) |> 
+  components() |> 
+  autoplot()
+```
+
+```{r}
+econ_tsbl |> 
+  autoplot(pce)
+
+econ_tsbl |> 
+  model (
+    stl = STL (log(pce) ~ season(), robust = TRUE)
+  )|>
+  components ()|>
+  autoplot()
+```
+
